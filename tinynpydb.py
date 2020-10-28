@@ -26,7 +26,7 @@ except ImportError:
     import pickle
 
 
-class NumPyDB:
+class NumPyDB(object):
     def __init__(self, database_name, mode="store"):
         self.filename = Path(database_name)
         self.dn = self.filename.with_suffix(".dat")  # NumPy array data
@@ -59,6 +59,8 @@ class NumPyDB:
                     # append tuple (position, identifier):
                     # Warning: here every identifier becomes a string
                     self.positions.append((int(c[0]), " ".join(c[1:]).strip()))
+        else:
+            raise ValueError(f"Unrecognized mode: {mode}.")
 
     def locate(self, identifier):  # base class
         """Find position in files where data corresponding to identifier
