@@ -63,6 +63,7 @@ def test_store_singlearray(singlearray):
 
     assert (len(npdb.positions) == 1)
 
+
 def test_load_staticarray(staticarray):
     dbname = 'test_load_staticarray'
     npdb = tnpdb.NumPyDB(dbname, mode="store")
@@ -71,6 +72,31 @@ def test_load_staticarray(staticarray):
     assert (len(npdb.positions) == 1)
 
     npdb2 = tnpdb.NumPyDB(dbname, mode="load")
-    loaded_array, loaded_id = npdb.load(0)
+    loaded_array, loaded_id = npdb2.load(0)
 
     np.testing.assert_array_equal(staticarray, loaded_array)
+
+
+def test_store_manyarrays(manyarrays):
+    dbname = TEMP_PATH / 'test_store_manyarrays'
+    npdb = tnpdb.NumPyDB(dbname, mode="store")
+
+    for iarray, anarray in enumerate(manyarrays):
+        npdb.dump(singlearray, iarray)
+
+    assert (len(npdb.positions) == len(manyarrays))
+
+
+
+def test_load_manyarrays(manyarrays):
+    original_arrays = manyarrays
+    dbname = 'test_load_manyarrays'
+    npdb = tnpdb.NumPyDB(dbname, mode="store")
+
+    for iarray, anarray in enumerate(manyarrays):
+        npdb.dump(singlearray, iarray)
+
+    npdb2 = tnpdb.NumPyDB(dbname, mode="load")
+    for iarray, anarray in enumerate(manyarrays):
+        loaded_array, loaded_id = npdb2.load(iarray)
+        np.testing.assert_array_equal(original_arrays[iarray], loaded_array)
