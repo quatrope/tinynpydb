@@ -43,3 +43,11 @@ npdb = tnpdb.NumPyDB('testnpdb', mode="load")
 loaded_array = npdb.load(0)
 print(loaded_array)
 ```
+
+--------
+*That's pretty much all we do*
+
+
+This was inspired from SciTools NumpyDB implementation
+[Scitools github repo](https://github.com/hplgit/scitools)
+and we decided to mantain a tiny version of it.
