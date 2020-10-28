@@ -10,6 +10,7 @@
 # Full Text: https://github.com/quatrope/tinynpydb/blob/master/LICENSE
 #
 import os
+from pathlib import Path
 
 try:
     import cPickle as pickle
@@ -19,9 +20,9 @@ except ImportError:
 
 class NumPyDB:
     def __init__(self, database_name, mode="store"):
-        self.filename = database_name
-        self.dn = self.filename + ".dat"  # NumPy array data
-        self.pn = self.filename + ".map"  # positions & identifiers
+        self.filename = Path(database_name)
+        self.dn = self.filename.with_suffix(".dat")  # NumPy array data
+        self.pn = self.filename.with_suffix(".map")  # positions & identifiers
 
         if mode == "store":
             # bring files into existence:
@@ -71,13 +72,6 @@ class NumPyDB:
             raise LookupError("Identifier not found")
 
         return selected_pos, selected_id
-
-
-class NumPyDB_cPickle(NumPyDB):
-    """Use basic cPickle class."""
-
-    def __init__(self, database_name, mode="store"):
-        NumPyDB.__init__(self, database_name, mode)
 
     def dump(self, a, identifier):
         """Dump NumPy array a with identifier."""

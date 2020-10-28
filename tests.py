@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+#  numpydb.py
+#
+#  Copyright 2020 QuatroPe
+#
+# This file is part of ProperImage (https://github.com/quatrope/tinynpydb)
+# License: MIT
+# Full Text: https://github.com/quatrope/tinynpydb/blob/master/LICENSE
+#
+import os
+import pytest
+import tempfile
+import pathlib
+
+import numpy as np
+import tinynpydb as tnpdb
+
+# =============================================================================
+#   CONSTANTS
+# =============================================================================
+TEMP_DIR = tempfile.mkdtemp(suffix="_tinynpydb")
+
+TEMP_PATH = pathlib.Path(TEMP_DIR)
+
+# =============================================================================
+#   FIXTURES
+# =============================================================================
+
+@pytest.fixture()
+def singlearray():
+    return np.random.random(size=(3, 3))
+
+@pytest.fixture()
+def manyarrays():
+    return [np.random.random(size=(3, 3)) for i in range(10)]
+
+@pytest.fixture()
+def staticarray():
+    return np.array(
+        [
+            [1, 2, 3],
+            [-1, -2, -3],
+            [0.1, 0.2, 0.3],
+            ]
+        )
+
+# =============================================================================
+#   TESTS
+# =============================================================================
+
+def test_store_singlearray(singlearray):
+    dbname = TEMP_PATH / 'test_store_singlearray'
+    npdb = tnpdb.NumPyDB(dbname, mode="store")
+
+    assert os.path.exists(dbname.with_suffix(".dat"))
+    assert os.path.exists(dbname.with_suffix(".map"))
+    assert os.path.isfile(dbname.with_suffix(".dat"))
+    assert os.path.isfile(dbname.with_suffix(".map"))
+
+    npdb.dump(singlearray, 0)
+
+    assert (len(npdb.positions) == 1)
+
+def test_load_staticarray(staticarray):
+    dbname = 'test_load_staticarray'
+    npdb = tnpdb.NumPyDB(dbname, mode="store")
+    npdb.dump(staticarray, 0)
+
+    assert (len(npdb.positions) == 1)
+
+    npdb2 = tnpdb.NumPyDB(dbname, mode="load")
+    loaded_array, loaded_id = npdb.load(0)
+
+    np.testing.assert_array_equal(staticarray, loaded_array)

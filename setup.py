@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+#
+#  numpydb.py
+#
+#  Copyright 2020 QuatroPe
+#
+# This file is part of ProperImage (https://github.com/quatrope/tinynpydb)
+# License: MIT
+# Full Text: https://github.com/quatrope/tinynpydb/blob/master/LICENSE
+#
 
 # =============================================================================
 # DOCS
