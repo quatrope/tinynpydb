@@ -9,6 +9,14 @@
 # License: MIT
 # Full Text: https://github.com/quatrope/tinynpydb/blob/master/LICENSE
 #
+
+
+__version__ = "0.1"
+
+__all__ = [
+    "NumPyDB",
+]
+
 import os
 from pathlib import Path
 
@@ -23,6 +31,7 @@ class NumPyDB:
         self.filename = Path(database_name)
         self.dn = self.filename.with_suffix(".dat")  # NumPy array data
         self.pn = self.filename.with_suffix(".map")  # positions & identifiers
+        self.mode = mode
 
         if mode == "store":
             # bring files into existence:
@@ -37,11 +46,8 @@ class NumPyDB:
         elif mode == "load":
             # check if files are there:
             if not os.path.isfile(self.dn) or not os.path.isfile(self.pn):
-                raise IOError(
-                    "Could not find the files {} and {}".format(
-                        self.dn, self.pn
-                    )
-                )
+                msg = f"Could not find the files {self.dn} and {self.pn}"
+                raise IOError(msg)
             # load mapfile into list of tuples:
             with open(self.pn, "r") as fm:
                 self.positions = []
@@ -51,16 +57,16 @@ class NumPyDB:
                     # line is an identifier
                     c = line.split()
                     # append tuple (position, identifier):
+                    # Warning: here every identifier becomes a string
                     self.positions.append((int(c[0]), " ".join(c[1:]).strip()))
 
     def locate(self, identifier):  # base class
-        """
-        Find position in files where data corresponding
-        to identifier are stored.
-        bestapprox is a user-defined function for computing
-        the distance between two identifiers.
-        """
+        """Find position in files where data corresponding to identifier
+        are stored."""
+
         # first search for an exact identifier match:
+        if (self.mode == "load") and (not isinstance(identifier, str)):
+            identifier = str(identifier)
         selected_pos = -1
         selected_id = None
         for pos, id in self.positions:

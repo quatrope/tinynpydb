@@ -28,30 +28,29 @@ TEMP_PATH = pathlib.Path(TEMP_DIR)
 #   FIXTURES
 # =============================================================================
 
+
 @pytest.fixture()
 def singlearray():
     return np.random.random(size=(3, 3))
+
 
 @pytest.fixture()
 def manyarrays():
     return [np.random.random(size=(3, 3)) for i in range(10)]
 
+
 @pytest.fixture()
 def staticarray():
-    return np.array(
-        [
-            [1, 2, 3],
-            [-1, -2, -3],
-            [0.1, 0.2, 0.3],
-            ]
-        )
+    return np.array([[1, 2, 3], [-1, -2, -3], [0.1, 0.2, 0.3]])
+
 
 # =============================================================================
 #   TESTS
 # =============================================================================
 
+
 def test_store_singlearray(singlearray):
-    dbname = TEMP_PATH / 'test_store_singlearray'
+    dbname = TEMP_PATH / "test_store_singlearray"
     npdb = tnpdb.NumPyDB(dbname, mode="store")
 
     assert os.path.exists(dbname.with_suffix(".dat"))
@@ -61,15 +60,15 @@ def test_store_singlearray(singlearray):
 
     npdb.dump(singlearray, 0)
 
-    assert (len(npdb.positions) == 1)
+    assert len(npdb.positions) == 1
 
 
-def test_load_staticarray(staticarray):
-    dbname = 'test_load_staticarray'
+def test_staticarray(staticarray):
+    dbname = "test_staticarray"
     npdb = tnpdb.NumPyDB(dbname, mode="store")
     npdb.dump(staticarray, 0)
 
-    assert (len(npdb.positions) == 1)
+    assert len(npdb.positions) == 1
 
     npdb2 = tnpdb.NumPyDB(dbname, mode="load")
     loaded_array, loaded_id = npdb2.load(0)
@@ -78,25 +77,25 @@ def test_load_staticarray(staticarray):
 
 
 def test_store_manyarrays(manyarrays):
-    dbname = TEMP_PATH / 'test_store_manyarrays'
+    dbname = TEMP_PATH / "test_store_manyarrays"
     npdb = tnpdb.NumPyDB(dbname, mode="store")
 
     for iarray, anarray in enumerate(manyarrays):
-        npdb.dump(singlearray, iarray)
+        npdb.dump(anarray, iarray)
 
-    assert (len(npdb.positions) == len(manyarrays))
-
+    assert len(npdb.positions) == len(manyarrays)
 
 
 def test_load_manyarrays(manyarrays):
     original_arrays = manyarrays
-    dbname = 'test_load_manyarrays'
+    dbname = "test_load_manyarrays"
     npdb = tnpdb.NumPyDB(dbname, mode="store")
 
-    for iarray, anarray in enumerate(manyarrays):
-        npdb.dump(singlearray, iarray)
+    for iarray, anarray in enumerate(original_arrays):
+        npdb.dump(anarray, iarray)
 
     npdb2 = tnpdb.NumPyDB(dbname, mode="load")
-    for iarray, anarray in enumerate(manyarrays):
+    for iarray, anarray in enumerate(original_arrays):
         loaded_array, loaded_id = npdb2.load(iarray)
+        assert str(iarray) == loaded_id
         np.testing.assert_array_equal(original_arrays[iarray], loaded_array)

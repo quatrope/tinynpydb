@@ -38,12 +38,12 @@ use_setuptools()
 PATH = os.path.abspath(os.path.dirname(__file__))
 
 # =============================================================================
-# Get the version from properimage file itself (not imported)
+# Get the version from tinynpydb file itself (not imported)
 # =============================================================================
 
-PROPERIMAGE_PY_PATH = os.path.join(PATH, "tinypnpydb.py")
+TINYNPYDB_PY_PATH = os.path.join(PATH, "tinynpydb.py")
 
-with open(PROPERIMAGE_PY_PATH, "r") as f:
+with open(TINYNPYDB_PY_PATH, "r") as f:
     for line in f:
         if line.startswith("__version__"):
             _, _, TDB_VERSION = line.replace('"', "").split()
@@ -79,7 +79,7 @@ def do_setup():
         author="QuatroPE",
         author_email="bruno.sanchez@duke.edu",
         url="https://github.com/quatrope/tinynpydb",
-        py_modules=["ez_setup", 'tinynpydb'],
+        py_modules=("ez_setup", "tinynpydb"),
         license="MIT",
         keywords="numpy",
         classifiers=(
