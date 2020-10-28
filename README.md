@@ -6,10 +6,15 @@
 
 ## Installing
 
-Simply clone and from within the repo
-```
-pip install -e .
-```
+- From PyPI
+    ```
+    pip install tinynpydb
+    ```
+
+- Simply clone and from within the repo
+    ```
+    pip install -e .
+    ```
 
 ## Quickstart
 
