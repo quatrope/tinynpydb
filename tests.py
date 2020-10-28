@@ -122,3 +122,10 @@ def test_bad_identifier(manyarrays):
 
     with pytest.raises(LookupError):
         npdb.load(42)
+
+
+def test_bad_mode():
+    dbname = TEMP_PATH / "test_bad_mode"
+
+    with pytest.raises(ValueError):
+        tnpdb.NumPyDB(dbname, mode="bad_mode")
