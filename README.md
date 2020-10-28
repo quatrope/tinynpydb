@@ -2,7 +2,7 @@
 [![codecov](https://codecov.io/gh/quatrope/tinynpydb/branch/main/graph/badge.svg?token=UNSGY6431V)](undefined)
 
 # The `tinynpydb` project
-`tinynpydb` _(tiny-en-py-db)_ is a tiny picke-based numpy array database
+`tinynpydb` _(tiny-en-py-db)_ is a tiny pickle-based numpy array database.
 
 ## Installing
 
