@@ -29,17 +29,17 @@ TEMP_PATH = pathlib.Path(TEMP_DIR)
 # =============================================================================
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def singlearray():
     return np.random.random(size=(3, 3))
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def manyarrays():
     return [np.random.random(size=(3, 3)) for i in range(10)]
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def staticarray():
     return np.array([[1, 2, 3], [-1, -2, -3], [0.1, 0.2, 0.3]])
 
@@ -64,7 +64,7 @@ def test_store_singlearray(singlearray):
 
 
 def test_staticarray(staticarray):
-    dbname = "test_staticarray"
+    dbname = TEMP_PATH / "test_staticarray"
     npdb = tnpdb.NumPyDB(dbname, mode="store")
     npdb.dump(staticarray, 0)
 
@@ -88,7 +88,7 @@ def test_store_manyarrays(manyarrays):
 
 def test_load_manyarrays(manyarrays):
     original_arrays = manyarrays
-    dbname = "test_load_manyarrays"
+    dbname = TEMP_PATH / "test_load_manyarrays"
     npdb = tnpdb.NumPyDB(dbname, mode="store")
 
     for iarray, anarray in enumerate(original_arrays):
@@ -99,3 +99,26 @@ def test_load_manyarrays(manyarrays):
         loaded_array, loaded_id = npdb2.load(iarray)
         assert str(iarray) == loaded_id
         np.testing.assert_array_equal(original_arrays[iarray], loaded_array)
+
+
+# =============================================================================
+#   TESTING EXCEPTIONS
+# =============================================================================
+
+
+def test_opening_nonexisting_db():
+    dbname = TEMP_PATH / "test_opening_nonexisting_db"
+
+    with pytest.raises(IOError):
+        tnpdb.NumPyDB(dbname, mode="load")
+
+
+def test_bad_identifier(manyarrays):
+    dbname = TEMP_PATH / "test_bad_identifier"
+    npdb = tnpdb.NumPyDB(dbname, mode="store")
+
+    for iarray, anarray in enumerate(manyarrays):
+        npdb.dump(anarray, iarray)
+
+    with pytest.raises(LookupError):
+        npdb.load(42)
