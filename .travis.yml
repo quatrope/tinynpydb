@@ -1,0 +1,25 @@
+dist: xenial
+os: linux
+language: python
+
+install:
+  - pip install tox
+  - pip install codecov
+
+script:
+  - tox -r
+
+jobs:
+    include:
+        - python: 3.7
+          env: TOXENV=py37
+        - python: 3.8
+          env: TOXENV=py38
+
+        - python: 3.8
+          env: TOXENV=style
+        - python: 3.8
+          env: TOXENV=coverage
+
+#after_success:
+#    - codecov --token=4022c5c1-b038-4f9b-bf1b-9d3b3d2b4628
