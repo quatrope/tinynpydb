@@ -20,6 +20,8 @@ jobs:
           env: TOXENV=style
         - python: 3.8
           env: TOXENV=coverage
+        - python: 3.8
+          env: TOXENC=check-manifest
 
 after_success:
     - codecov --token=e664b805-341b-4851-95e5-c2ecfb0ac444
