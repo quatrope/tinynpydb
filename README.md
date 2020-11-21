@@ -1,3 +1,4 @@
+[![QuatroPe](https://img.shields.io/badge/QuatroPe-Applications-1c5896)](https://quatrope.github.io/)
 [![Build Status](https://travis-ci.com/quatrope/tinynpydb.svg?branch=main)](https://travis-ci.com/quatrope/tinynpydb)
 [![codecov](https://codecov.io/gh/quatrope/tinynpydb/branch/main/graph/badge.svg?token=UNSGY6431V)](undefined)
 
