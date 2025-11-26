@@ -18,15 +18,11 @@ __all__ = [
 ]
 
 import os
+import pickle
 from pathlib import Path
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
-
-class NumPyDB(object):
+class NumPyDB:
     def __init__(self, database_name, mode="store"):
         self.filename = Path(database_name)
         self.dn = self.filename.with_suffix(".dat")  # NumPy array data
@@ -35,11 +31,11 @@ class NumPyDB(object):
 
         if mode == "store":
             # bring files into existence:
-            fd = open(self.dn, "w")
-            fd.close()
+            with open(self.dn, "w", encoding="utf-8"):
+                pass
 
-            fm = open(self.pn, "w")
-            fm.close()
+            with open(self.pn, "w", encoding="utf-8"):
+                pass
 
             self.positions = []
 
@@ -49,7 +45,7 @@ class NumPyDB(object):
                 msg = f"Could not find the files {self.dn} and {self.pn}"
                 raise IOError(msg)
             # load mapfile into list of tuples:
-            with open(self.pn, "r") as fm:
+            with open(self.pn, "r", encoding="utf-8") as fm:
                 self.positions = []
                 for line in fm:
                     # first column contains file positions in the
@@ -71,10 +67,10 @@ class NumPyDB(object):
             identifier = str(identifier)
         selected_pos = -1
         selected_id = None
-        for pos, id in self.positions:
-            if id == identifier:
+        for pos, item_id in self.positions:
+            if item_id == identifier:
                 selected_pos = pos
-                selected_id = id
+                selected_id = item_id
                 break
         if selected_pos == -1:
             raise LookupError("Identifier not found")
@@ -85,9 +81,9 @@ class NumPyDB(object):
         """Dump NumPy array a with identifier."""
         # fd: datafile, fm: mapfile
         with open(self.dn, "ab") as fd:
-            with open(self.pn, "a") as fm:
+            with open(self.pn, "a", encoding="utf-8") as fm:
                 # fd.tell(): return current position in datafile
-                fm.write("%d\t\t %s\n" % (fd.tell(), identifier))
+                fm.write(f"{fd.tell()}\t\t {identifier}\n")
                 self.positions.append((fd.tell(), identifier))
                 pickle.dump(a, fd, 1)  # 1: binary storage
 
@@ -98,10 +94,10 @@ class NumPyDB(object):
         then taken as a function that can be used for computing
         the distance between two identifiers id1 and id2.
         """
-        pos, id = self.locate(identifier)
+        pos, item_id = self.locate(identifier)
         if pos < 0:
             return [None, "not found"]
         with open(self.dn, "rb") as fd:
             fd.seek(pos)
             a = pickle.load(fd)
-        return [a, id]
+        return [a, item_id]
