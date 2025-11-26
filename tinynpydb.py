@@ -23,11 +23,13 @@ from pathlib import Path
 
 
 class NumPyDB:
-    def __init__(self, database_name, mode="store"):
+    def __init__(self, database_name, mode="store", purgeable=False):
         self.filename = Path(database_name)
         self.dn = self.filename.with_suffix(".dat")  # NumPy array data
         self.pn = self.filename.with_suffix(".map")  # positions & identifiers
         self.mode = mode
+        self.purgeable = purgeable
+        self._owns_files = False  # Track if we created the files
 
         if mode == "store":
             # bring files into existence:
@@ -38,6 +40,7 @@ class NumPyDB:
                 pass
 
             self.positions = []
+            self._owns_files = True  # We created these files
 
         elif mode == "load":
             # check if files are there:
@@ -55,6 +58,7 @@ class NumPyDB:
                     # append tuple (position, identifier):
                     # Warning: here every identifier becomes a string
                     self.positions.append((int(c[0]), " ".join(c[1:]).strip()))
+            self._owns_files = False  # We didn't create these files
         else:
             raise ValueError(f"Unrecognized mode: {mode}.")
 
@@ -101,3 +105,15 @@ class NumPyDB:
             fd.seek(pos)
             a = pickle.load(fd)
         return [a, item_id]
+
+    def close(self):
+        """Delete the database files (.dat and .map)."""
+        if os.path.isfile(self.dn):
+            os.remove(self.dn)
+        if os.path.isfile(self.pn):
+            os.remove(self.pn)
+
+    def __del__(self):
+        """Destructor: delete files if purgeable and we own them."""
+        if self.purgeable and self._owns_files:
+            self.close()
