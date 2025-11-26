@@ -13,7 +13,9 @@
 
 __version__ = "0.1.2"
 
-__all__ = ["NumPyDB",]
+__all__ = [
+    "NumPyDB",
+]
 
 import os
 from pathlib import Path
