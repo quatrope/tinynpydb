@@ -208,3 +208,16 @@ def test_purgeable_load_mode(staticarray):
     # Files should still exist because we didn't create them
     assert os.path.exists(dbname.with_suffix(".dat"))
     assert os.path.exists(dbname.with_suffix(".map"))
+
+
+def test_del_on_failed_init():
+    """Test that __del__ doesn't crash if __init__ failed."""
+    dbname = TEMP_PATH / "test_del_on_failed_init"
+
+    # Try to create a DB with invalid mode, should raise ValueError
+    try:
+        tnpdb.NumPyDB(dbname, mode="invalid_mode")
+    except ValueError:
+        pass  # Expected
+
+    # No crash should occur when the partially initialized object is gc'd
