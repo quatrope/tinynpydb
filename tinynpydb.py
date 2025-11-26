@@ -117,4 +117,8 @@ class NumPyDB:
         """Destructor: delete files if purgeable and we own them."""
         if hasattr(self, "purgeable") and hasattr(self, "_owns_files"):
             if self.purgeable and self._owns_files:
-                self.close()
+                try:
+                    self.close()
+                except Exception:
+                    # Suppress exceptions in __del__ to avoid issues during gc
+                    pass
