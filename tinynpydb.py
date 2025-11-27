@@ -33,9 +33,10 @@ class NumPyDB:
 
         if mode == "store":
             # bring files into existence:
-            with open(self.dn, "w", encoding="utf-8"):
+            with open(self.dn, "wb"):  # binary file for pickle data
                 pass
 
+            # text file for metadata
             with open(self.pn, "w", encoding="utf-8"):
                 pass
 
