@@ -1,6 +1,8 @@
 [![QuatroPe](https://img.shields.io/badge/QuatroPe-Applications-1c5896)](https://quatrope.github.io/)
 [![Build Status](https://github.com/quatrope/tinynpydb/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/quatrope/tinynpydb/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/quatrope/tinynpydb/branch/main/graph/badge.svg?token=UNSGY6431V)](undefined)
+[![Tests](https://github.com/quatrope/tinynpydb/actions/workflows/tests.yml/badge.svg)](https://github.com/quatrope/tinynpydb/actions/workflows/tests.yml)
+[![Lint](https://github.com/quatrope/tinynpydb/actions/workflows/lint.yml/badge.svg)](https://github.com/quatrope/tinynpydb/actions/workflows/lint.yml)
+[![Python Version](https://img.shields.io/pypi/pyversions/tinynpydb)](https://pypi.org/project/tinynpydb/)
 
 # The `tinynpydb` project
 `tinynpydb` _(tiny-en-py-db)_ is a tiny pickle-based numpy array database.

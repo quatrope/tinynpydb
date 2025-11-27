@@ -18,30 +18,30 @@ __all__ = [
 ]
 
 import os
+import pickle
 from pathlib import Path
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
-
-class NumPyDB(object):
-    def __init__(self, database_name, mode="store"):
+class NumPyDB:
+    def __init__(self, database_name, mode="store", purgeable=False):
         self.filename = Path(database_name)
         self.dn = self.filename.with_suffix(".dat")  # NumPy array data
         self.pn = self.filename.with_suffix(".map")  # positions & identifiers
         self.mode = mode
+        self.purgeable = purgeable
+        self._owns_files = False  # Track if we created the files
 
         if mode == "store":
             # bring files into existence:
-            fd = open(self.dn, "w")
-            fd.close()
+            with open(self.dn, "wb"):  # binary file for pickle data
+                pass
 
-            fm = open(self.pn, "w")
-            fm.close()
+            # text file for metadata
+            with open(self.pn, "w", encoding="utf-8"):
+                pass
 
             self.positions = []
+            self._owns_files = True  # We created these files
 
         elif mode == "load":
             # check if files are there:
@@ -49,7 +49,7 @@ class NumPyDB(object):
                 msg = f"Could not find the files {self.dn} and {self.pn}"
                 raise IOError(msg)
             # load mapfile into list of tuples:
-            with open(self.pn, "r") as fm:
+            with open(self.pn, "r", encoding="utf-8") as fm:
                 self.positions = []
                 for line in fm:
                     # first column contains file positions in the
@@ -59,6 +59,7 @@ class NumPyDB(object):
                     # append tuple (position, identifier):
                     # Warning: here every identifier becomes a string
                     self.positions.append((int(c[0]), " ".join(c[1:]).strip()))
+            self._owns_files = False  # We didn't create these files
         else:
             raise ValueError(f"Unrecognized mode: {mode}.")
 
@@ -71,10 +72,10 @@ class NumPyDB(object):
             identifier = str(identifier)
         selected_pos = -1
         selected_id = None
-        for pos, id in self.positions:
-            if id == identifier:
+        for pos, item_id in self.positions:
+            if item_id == identifier:
                 selected_pos = pos
-                selected_id = id
+                selected_id = item_id
                 break
         if selected_pos == -1:
             raise LookupError("Identifier not found")
@@ -85,9 +86,9 @@ class NumPyDB(object):
         """Dump NumPy array a with identifier."""
         # fd: datafile, fm: mapfile
         with open(self.dn, "ab") as fd:
-            with open(self.pn, "a") as fm:
+            with open(self.pn, "a", encoding="utf-8") as fm:
                 # fd.tell(): return current position in datafile
-                fm.write("%d\t\t %s\n" % (fd.tell(), identifier))
+                fm.write(f"{fd.tell()}\t\t {identifier}\n")
                 self.positions.append((fd.tell(), identifier))
                 pickle.dump(a, fd, 1)  # 1: binary storage
 
@@ -98,10 +99,27 @@ class NumPyDB(object):
         then taken as a function that can be used for computing
         the distance between two identifiers id1 and id2.
         """
-        pos, id = self.locate(identifier)
+        pos, item_id = self.locate(identifier)
         if pos < 0:
             return [None, "not found"]
         with open(self.dn, "rb") as fd:
             fd.seek(pos)
             a = pickle.load(fd)
-        return [a, id]
+        return [a, item_id]
+
+    def close(self):
+        """Delete the database files (.dat and .map)."""
+        if os.path.isfile(self.dn):
+            os.remove(self.dn)
+        if os.path.isfile(self.pn):
+            os.remove(self.pn)
+
+    def __del__(self):
+        """Destructor: delete files if purgeable and we own them."""
+        if hasattr(self, "purgeable") and hasattr(self, "_owns_files"):
+            if self.purgeable and self._owns_files:
+                try:
+                    self.close()
+                except Exception:
+                    # Suppress exceptions in __del__ to avoid issues during gc
+                    pass

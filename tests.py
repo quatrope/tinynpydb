@@ -129,3 +129,95 @@ def test_bad_mode():
 
     with pytest.raises(ValueError):
         tnpdb.NumPyDB(dbname, mode="bad_mode")
+
+
+def test_close_method(singlearray):
+    """Test manual close() method deletes database files."""
+    dbname = TEMP_PATH / "test_close_method"
+    npdb = tnpdb.NumPyDB(dbname, mode="store")
+    npdb.dump(singlearray, 0)
+
+    # Verify files exist
+    assert os.path.exists(dbname.with_suffix(".dat"))
+    assert os.path.exists(dbname.with_suffix(".map"))
+
+    # Close the database
+    npdb.close()
+
+    # Verify files are deleted
+    assert not os.path.exists(dbname.with_suffix(".dat"))
+    assert not os.path.exists(dbname.with_suffix(".map"))
+
+
+def test_purgeable_false(singlearray):
+    """Test that purgeable=False (default) doesn't delete files on gc."""
+    dbname = TEMP_PATH / "test_purgeable_false"
+    npdb = tnpdb.NumPyDB(dbname, mode="store", purgeable=False)
+    npdb.dump(singlearray, 0)
+
+    # Verify files exist
+    assert os.path.exists(dbname.with_suffix(".dat"))
+    assert os.path.exists(dbname.with_suffix(".map"))
+
+    # Delete the object
+    del npdb
+
+    # Files should still exist
+    assert os.path.exists(dbname.with_suffix(".dat"))
+    assert os.path.exists(dbname.with_suffix(".map"))
+
+
+def test_purgeable_true(singlearray):
+    """Test that purgeable=True deletes files on gc."""
+    dbname = TEMP_PATH / "test_purgeable_true"
+    npdb = tnpdb.NumPyDB(dbname, mode="store", purgeable=True)
+    npdb.dump(singlearray, 0)
+
+    # Verify files exist
+    assert os.path.exists(dbname.with_suffix(".dat"))
+    assert os.path.exists(dbname.with_suffix(".map"))
+
+    # Delete the object
+    del npdb
+
+    # Files should be deleted
+    assert not os.path.exists(dbname.with_suffix(".dat"))
+    assert not os.path.exists(dbname.with_suffix(".map"))
+
+
+def test_purgeable_load_mode(staticarray):
+    """Test that purgeable doesn't delete files in load mode."""
+    dbname = TEMP_PATH / "test_purgeable_load_mode"
+
+    # Create and populate database
+    npdb = tnpdb.NumPyDB(dbname, mode="store")
+    npdb.dump(staticarray, 0)
+    del npdb
+
+    # Load with purgeable=True
+    npdb2 = tnpdb.NumPyDB(dbname, mode="load", purgeable=True)
+    loaded_array, loaded_id = npdb2.load(0)
+
+    # Verify files exist
+    assert os.path.exists(dbname.with_suffix(".dat"))
+    assert os.path.exists(dbname.with_suffix(".map"))
+
+    # Delete the object
+    del npdb2
+
+    # Files should still exist because we didn't create them
+    assert os.path.exists(dbname.with_suffix(".dat"))
+    assert os.path.exists(dbname.with_suffix(".map"))
+
+
+def test_del_on_failed_init():
+    """Test that __del__ doesn't crash if __init__ failed."""
+    dbname = TEMP_PATH / "test_del_on_failed_init"
+
+    # Try to create a DB with invalid mode, should raise ValueError
+    try:
+        tnpdb.NumPyDB(dbname, mode="invalid_mode")
+    except ValueError:
+        pass  # Expected
+
+    # No crash should occur when the partially initialized object is gc'd
